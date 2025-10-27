@@ -32,6 +32,7 @@ function read-kocoip{
     return $ip
 }
 function set_erzptroutes($kocoip){
+    write-host "[debug]use $kocoip"
     route delete 100.102.0.0  >$null
     route delete 100.103.0.0 >$null
     route delete 100.102.128.0 >$null
@@ -39,6 +40,9 @@ function set_erzptroutes($kocoip){
     route add 100.103.0.0 MASK 255.255.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
     route add 100.102.0.0 MASK 255.254.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
     route add 188.144.0.0 mask 255.254.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "FAILED to add route (route.exe exit code: $LASTEXITCODE)"
+    }
 }
 function check_connectorsds($kocoip){
     if(Test-Connection $kocoip -IPv4 -Count 1){
@@ -116,8 +120,8 @@ if($potentialkonnektorip.count -ne 1 -or $potentialkonnektorip -eq "0.0.0.0"){
     }
 }
 #check dns
+Write-Host "Prüfe DNS lookup.."
 $state.DNSlookup = test-dnslookup
-
 # fix stuff 
 if(-not (ask_user "Sollen die Routen neu gesetzt werden?")){write-host "ok Tschüss!",exit 0} # lol
 $state.ShouldFixRoutes = $true
@@ -133,7 +137,15 @@ else{
 if(-not $state.DNSlookup){
     write-host "DNS Auflösung funktioniert nicht korrekt." -ForegroundColor Red
     Write-Host "Teste DNS Auflösung mit Konnektorip" -ForegroundColor Cyan
-    Resolve-DnsName idp.zentral.idp.splitdns.ti-dienste.de -Server $state.konnektorip
+    try {
+        Resolve-DnsName idp.zentral.idp.splitdns.ti-dien ste.de -Server $state.konnektorip -ErrorAction Stop >$null
+        Write-Host "DNS-Auflösung funktioniert mit Konnektorip..." -ForegroundColor Yellow
+
+    }
+    catch {
+        Write-Host "DNS-Auflösung schlägt weiterhin fehl.`n Bitte Technikertermin planen" -ForegroundColor Red
+    }
+    
 
 }
 
@@ -142,6 +154,10 @@ if($state.ManagedTI){
     #managed ti case, this is kinda tricky
     #not implemented yes
     Write-Host "Bitte Techniker Termin vereinbaren" -ForegroundColor Yellow
+    Write-Host "Weitere Informationen (bitte Screenshot im Ticket ablegen):"
+    Get-NetRoute 100.1*
+    ipconfig.exe
+
     exit 0
 }
 else{
