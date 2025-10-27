@@ -1,11 +1,12 @@
 ﻿@echo off
 %windir%\System32\more +8 "%~f0" > "%temp%\%~n0.ps1"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%temp%\%~n0.ps1" %*
+pwsh -NoProfile -ExecutionPolicy Bypass -File "%temp%\%~n0.ps1" %*
 del %temp%\%~n0.ps1
 pause
 exit /b
 
 ::PowerShell script  nach zeile 8
+#requires -Version 7.2
 $state = [ordered]@{
     KonnektorIp     = $null
     TiReachable     = $false
@@ -36,7 +37,6 @@ function read-kocoip{
     return $ip
 }
 function set_erzptroutes($kocoip){
-    write-host "[debug]use $kocoip"
     route delete 100.102.0.0  >$null
     route delete 100.103.0.0 >$null
     route delete 100.102.128.0 >$null

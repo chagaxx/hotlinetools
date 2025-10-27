@@ -1,7 +1,7 @@
 ﻿param(
     $konnektorip
 )
-
+#requires -Version 7.2
 $state = [ordered]@{
     KonnektorIp     = $null
     TiReachable     = $false
@@ -32,14 +32,13 @@ function read-kocoip{
     return $ip
 }
 function set_erzptroutes($kocoip){
-    write-host "[debug]use $kocoip"
     route delete 100.102.0.0  >$null
     route delete 100.103.0.0 >$null
     route delete 100.102.128.0 >$null
     route delete 188.144.0.0 >$null
-    route add 100.103.0.0 MASK 255.255.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
-    route add 100.102.0.0 MASK 255.254.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
-    route add 188.144.0.0 mask 255.254.0.0 $kocoip METRIC 99 -p -ErrorAction Stop  >$null
+    route add 100.103.0.0 MASK 255.255.0.0 $kocoip METRIC 99 -p  >$null
+    route add 100.102.0.0 MASK 255.254.0.0 $kocoip METRIC 99 -p  >$null
+    route add 188.144.0.0 mask 255.254.0.0 $kocoip METRIC 99 -p  >$null
     if ($LASTEXITCODE -ne 0) {
         throw "FAILED to add route (route.exe exit code: $LASTEXITCODE)"
     }
