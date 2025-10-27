@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 %windir%\System32\more +8 "%~f0" > "%temp%\%~n0.ps1"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%temp%\%~n0.ps1" %*
 del %temp%\%~n0.ps1
